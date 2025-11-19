@@ -1,0 +1,301 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-950;
+  }
+}
+
+@font-face {
+  font-family: "MyCustomFont";
+  src: url("../src/assets/fonts/myfont.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  font-family: "MyCustomFont", sans-serif;
+}
+
+
+@layer utilities {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes serverPulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes serverGlow {
+    0%, 100% {
+      filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.4));
+    }
+    50% {
+      filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.8));
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .animate-slideDown {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  .animate-serverPulse {
+    animation: serverPulse 2s ease-in-out infinite;
+  }
+
+  .animate-serverGlow {
+    animation: serverGlow 2s ease-in-out infinite;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .overscroll-contain {
+    overscroll-behavior: contain;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Custom scrollbar for pricing page */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thumb-cyan-500::-webkit-scrollbar-thumb {
+    background-color: rgb(6 182 212);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thumb-cyan-500::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(8 145 178);
+  }
+
+  .scrollbar-track-slate-800::-webkit-scrollbar-track {
+    background-color: rgb(30 41 59);
+    border-radius: 3px;
+  }
+
+  /* Print styles for invoice */
+  @media print {
+    .print\\:hidden {
+      display: none !important;
+    }
+
+    body {
+      background: white;
+    }
+
+    @page {
+      margin: 1cm;
+    }
+  }
+
+  /* GitBook-style Documentation Styles */
+  .doc-content {
+    @apply max-w-4xl mx-auto p-8;
+  }
+
+  .doc-content h1 {
+    @apply text-4xl font-bold text-slate-900 mb-4 pb-4 border-b border-slate-200;
+  }
+
+  .doc-content h2 {
+    @apply text-2xl font-bold text-slate-900 mt-8 mb-4;
+  }
+
+  .doc-content h3 {
+    @apply text-xl font-semibold text-slate-900 mt-6 mb-3;
+  }
+
+  .doc-content h4 {
+    @apply text-lg font-semibold text-slate-900 mt-4 mb-2;
+  }
+
+  .doc-content p {
+    @apply text-slate-700 leading-relaxed mb-4;
+  }
+
+  .doc-content ul,
+  .doc-content ol {
+    @apply mb-4 space-y-2;
+  }
+
+  .doc-content li {
+    @apply text-slate-700 leading-relaxed;
+  }
+
+  .doc-content code {
+    @apply bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-sm font-mono;
+  }
+
+  .doc-content pre {
+    @apply bg-slate-900 text-green-400 p-4 rounded-lg overflow-x-auto mb-4;
+  }
+
+  .doc-content pre code {
+    @apply bg-transparent text-green-400 p-0;
+  }
+
+  .doc-content table {
+    @apply w-full border-collapse mb-6;
+  }
+
+  .doc-content thead {
+    @apply bg-slate-100;
+  }
+
+  .doc-content th {
+    @apply border border-slate-300 px-4 py-3 text-left font-semibold text-slate-900;
+  }
+
+  .doc-content td {
+    @apply border border-slate-300 px-4 py-3 text-slate-700;
+  }
+
+  .doc-content tbody tr:hover {
+    @apply bg-slate-50;
+  }
+
+  .doc-content blockquote {
+    @apply border-l-4 border-cyan-500 pl-4 py-2 my-4 bg-cyan-50 text-slate-700;
+  }
+
+  .doc-content a {
+    @apply text-cyan-600 hover:text-cyan-700 underline;
+  }
+
+  .doc-content img {
+    @apply rounded-lg shadow-md mb-4;
+  }
+
+  /* Code block with syntax highlighting */
+  .doc-content .code-block {
+    @apply bg-slate-900 rounded-lg p-4 overflow-x-auto mb-4;
+  }
+
+  .doc-content .code-block code {
+    @apply text-green-400 font-mono text-sm;
+  }
+
+  /* Alert boxes */
+  .doc-alert-info {
+    @apply bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4;
+  }
+
+  .doc-alert-warning {
+    @apply bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4;
+  }
+
+  .doc-alert-success {
+    @apply bg-green-50 border border-green-200 rounded-lg p-4 mb-4;
+  }
+
+  .doc-alert-danger {
+    @apply bg-red-50 border border-red-200 rounded-lg p-4 mb-4;
+  }
+
+  /* Documentation sidebar */
+  .doc-sidebar {
+    @apply bg-white border-r border-slate-200 h-screen overflow-y-auto sticky top-0;
+  }
+
+  .doc-sidebar-item {
+    @apply block px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition;
+  }
+
+  .doc-sidebar-item.active {
+    @apply bg-cyan-50 text-cyan-700 font-medium;
+  }
+
+  /* Responsive table wrapper */
+  .table-wrapper {
+    @apply overflow-x-auto mb-6;
+  }
+}

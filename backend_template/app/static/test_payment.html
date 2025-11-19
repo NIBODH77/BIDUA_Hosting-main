@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Razorpay Test Payment</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .container { max-width: 500px; margin: auto; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; }
+    input, select, button {
+      width: 100%; padding: 8px; box-sizing: border-box;
+    }
+    button {
+      cursor: pointer; background-color: #3399cc; color: white; border: none;
+      transition: background 0.3s;
+    }
+    button:hover { background-color: #287a99; }
+    #response {
+      margin-top: 20px; padding: 10px; border: 1px solid #ccc;
+      background-color: #f9f9f9; white-space: pre-wrap; word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Test Payment</h1>
+
+  <div class="form-group">
+    <label for="token">Auth Token (Bearer)</label>
+    <input type="text" id="token" placeholder="Enter your auth token" />
+  </div>
+
+  <div class="form-group">
+    <label for="paymentType">Payment Type</label>
+    <select id="paymentType">
+      <option value="subscription">Premium Subscription (₹499)</option>
+      <option value="server">Server Purchase</option>
+    </select>
+  </div>
+
+  <div class="form-group" id="plan-group" style="display: none;">
+    <label for="planId">Plan ID</label>
+    <input type="number" id="planId" value="1" />
+  </div>
+
+  <button id="pay-button">Pay Now</button>
+
+  <div id="response">
+    <p>Response will be shown here.</p>
+  </div>
+</div>
+
+<script>
+  const API_BASE = window.location.origin;
+  const paymentTypeSelect = document.getElementById("paymentType");
+  const planGroup = document.getElementById("plan-group");
+  const payButton = document.getElementById("pay-button");
+  const responseDiv = document.getElementById("response");
+  const tokenInput = document.getElementById("token");
+
+  paymentTypeSelect.addEventListener("change", () => {
+    planGroup.style.display = paymentTypeSelect.value === "server" ? "block" : "none";
+  });
+
+  payButton.addEventListener("click", async () => {
+    const authToken = tokenInput.value.trim();
+    if (!authToken) {
+      alert("Please enter your auth token.");
+      return;
+    }
+
+    const paymentType = paymentTypeSelect.value;
+    const planId = document.getElementById("planId").value;
+
+    let createOrderPayload = { payment_type: paymentType };
+    if (paymentType === "server") {
+      createOrderPayload.plan_id = parseInt(planId);
+      createOrderPayload.billing_cycle = "monthly";
+    }
+
+    try {
+      responseDiv.innerText = "Creating order...";
+
+      const createOrderRes = await fetch(`${API_BASE}/api/v1/payments/create-order`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(createOrderPayload),
+      });
+
+      const rawText = await createOrderRes.text();
+      if (!rawText) {
+        throw new Error("Empty response from server");
+      }
+
+      let orderData;
+      try {
+        orderData = JSON.parse(rawText);
+      } catch (e) {
+        console.error("❌ Invalid JSON:", rawText);
+        throw new Error("Invalid JSON response from backend");
+      }
+
+      if (!createOrderRes.ok) {
+        const detail = orderData.detail || "Order creation failed";
+        throw new Error(detail);
+      }
+
+      responseDiv.innerText = `✅ Order created:\n${JSON.stringify(orderData, null, 2)}`;
+
+      const payment = orderData.payment || orderData.order || {};
+      const razorpay_order_id = payment.razorpay_order_id || payment.id;
+      const total_amount = payment.total_amount || payment.amount / 100;
+
+      // Get Razorpay Key ID
+      const keyRes = await fetch(`${API_BASE}/api/v1/payments/get-razorpay-key`);
+      const keyText = await keyRes.text();
+      if (!keyText) throw new Error("Empty key response");
+      let keyData;
+      try {
+        keyData = JSON.parse(keyText);
+      } catch {
+        throw new Error("Invalid JSON for Razorpay key");
+      }
+
+      const razorpayKeyId = keyData.razorpay_key_id || keyData.key_id;
+      if (!razorpayKeyId) throw new Error("Razorpay key not found in response");
+
+      // Launch Razorpay Checkout
+      const options = {
+        key: razorpayKeyId,
+        amount: total_amount * 100,
+        currency: "INR",
+        name: "RAMAERA Test",
+        description: `Payment for ${paymentType}`,
+        order_id: razorpay_order_id,
+        handler: async function (response) {
+          responseDiv.innerText = `Payment success — verifying...\n${JSON.stringify(response, null, 2)}`;
+          try {
+            const verifyRes = await fetch(`${API_BASE}/api/v1/payments/verify-payment`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${authToken}`,
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyText = await verifyRes.text();
+            if (!verifyText) throw new Error("Empty verification response");
+            let verifyData;
+            try {
+              verifyData = JSON.parse(verifyText);
+            } catch {
+              throw new Error("Invalid JSON from verify-payment");
+            }
+
+            if (!verifyRes.ok) {
+              throw new Error(verifyData.detail || "Verification failed");
+            }
+
+            responseDiv.innerText = `✅ Payment Verified!\n${JSON.stringify(verifyData, null, 2)}`;
+          } catch (verifyError) {
+            responseDiv.innerText = `❌ Verification Error: ${verifyError.message}`;
+          }
+        },
+        prefill: {
+          name: "Test User",
+          email: "test.user@example.com",
+          contact: "9999999999",
+        },
+        theme: { color: "#3399cc" },
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.on("payment.failed", function (response) {
+        responseDiv.innerText = `❌ Payment Failed:\n${JSON.stringify(response.error, null, 2)}`;
+      });
+      rzp.open();
+
+    } catch (err) {
+      console.error(err);
+      responseDiv.innerText = `❌ Error: ${err.message}`;
+    }
+  });
+</script>
+</body>
+</html>

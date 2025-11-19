@@ -1,0 +1,207 @@
+{
+  "page_title": "Review & Checkout",
+  "description": "Shopping cart page showing all items before checkout",
+  "sections": {
+    "cart_header": {
+      "title": "Your Shopping Cart",
+      "item_count_label": "Items in Cart"
+    },
+    "cart_table": {
+      "columns": [
+        {
+          "key": "product",
+          "label": "Product/Options",
+          "width": "50%"
+        },
+        {
+          "key": "price_cycle",
+          "label": "Price/Cycle",
+          "width": "25%",
+          "align": "right"
+        },
+        {
+          "key": "actions",
+          "label": "Actions",
+          "width": "25%",
+          "align": "center"
+        }
+      ],
+      "item_structure": {
+        "product_name": "Plan Name (e.g., General Purpose 8GB)",
+        "product_description": "Brief description",
+        "configurable_options": [
+          {
+            "label": "Operating System",
+            "value": "Ubuntu 22.04 LTS"
+          },
+          {
+            "label": "Datacenter",
+            "value": "Noida, India"
+          },
+          {
+            "label": "Hostname",
+            "value": "server1.example.com"
+          },
+          {
+            "label": "Additional IPv4",
+            "value": "2 IPs",
+            "price": "₹400.00/mo"
+          },
+          {
+            "label": "Backup Service",
+            "value": "Enabled",
+            "price": "₹500.00/mo"
+          }
+        ],
+        "specs": [
+          "4 vCPU",
+          "8GB RAM",
+          "200GB SSD",
+          "2TB Bandwidth"
+        ],
+        "billing_cycle": {
+          "cycle": "Annually",
+          "discount_percent": 15
+        },
+        "price": {
+          "original": "₹6,000.00",
+          "discounted": "₹5,100.00",
+          "billing_frequency": "Annually"
+        },
+        "actions": [
+          {
+            "type": "button",
+            "label": "Edit",
+            "icon": "edit",
+            "action": "edit_configuration"
+          },
+          {
+            "type": "button",
+            "label": "Remove",
+            "icon": "trash",
+            "action": "remove_from_cart",
+            "style": "danger"
+          }
+        ]
+      }
+    },
+    "promo_code": {
+      "title": "Apply Promo Code",
+      "fields": [
+        {
+          "type": "text",
+          "name": "promo_code",
+          "placeholder": "Enter promo code",
+          "button_label": "Validate Code"
+        }
+      ],
+      "messages": {
+        "success": "Promo code applied successfully!",
+        "error": "Invalid promo code",
+        "expired": "This promo code has expired"
+      }
+    },
+    "tax_estimate": {
+      "title": "Estimate Taxes",
+      "description": "Calculate taxes based on your location",
+      "fields": [
+        {
+          "type": "dropdown",
+          "name": "country",
+          "label": "Country",
+          "required": true
+        },
+        {
+          "type": "text",
+          "name": "state",
+          "label": "State/Province",
+          "required": false
+        },
+        {
+          "type": "text",
+          "name": "postal_code",
+          "label": "Postal Code",
+          "required": false
+        }
+      ],
+      "button_label": "Calculate Tax"
+    },
+    "order_summary": {
+      "title": "Order Summary",
+      "line_items": [
+        {
+          "label": "Subtotal",
+          "key": "subtotal",
+          "format": "currency"
+        },
+        {
+          "label": "Promo Code Discount",
+          "key": "promo_discount",
+          "format": "currency",
+          "style": "success",
+          "conditional": true
+        },
+        {
+          "label": "IGST @ 18.00%",
+          "key": "tax",
+          "format": "currency",
+          "help_text": "Indian Goods and Services Tax"
+        },
+        {
+          "label": "Setup Fees",
+          "key": "setup_fee",
+          "format": "currency",
+          "conditional": true
+        }
+      ],
+      "totals": [
+        {
+          "label": "Totals",
+          "key": "total",
+          "format": "currency",
+          "style": "bold"
+        },
+        {
+          "label": "Total Due Today",
+          "key": "due_today",
+          "format": "currency",
+          "style": "highlight",
+          "size": "large"
+        },
+        {
+          "label": "Recurring Amount",
+          "key": "recurring",
+          "format": "currency_with_frequency",
+          "help_text": "Amount charged for subsequent billing cycles"
+        }
+      ]
+    },
+    "actions": {
+      "primary": {
+        "label": "Proceed to Checkout",
+        "action": "checkout",
+        "style": "primary",
+        "size": "large"
+      },
+      "secondary": {
+        "label": "Continue Shopping",
+        "action": "continue_shopping",
+        "style": "secondary"
+      }
+    },
+    "empty_cart": {
+      "message": "Your Shopping Cart is Empty",
+      "icon": "shopping-cart",
+      "cta": {
+        "label": "Browse Plans",
+        "link": "/pricing"
+      }
+    }
+  },
+  "features": {
+    "auto_save": true,
+    "session_timeout": 30,
+    "max_items": 10,
+    "allows_multiple_same_product": false
+  }
+}

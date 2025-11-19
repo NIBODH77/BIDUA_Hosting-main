@@ -1,0 +1,295 @@
+{
+  "page_title": "Checkout",
+  "description": "Final checkout page with billing information and payment",
+  "sections": {
+    "progress_steps": [
+      {
+        "step": 1,
+        "label": "Review Cart",
+        "url": "/cart",
+        "status": "completed"
+      },
+      {
+        "step": 2,
+        "label": "Checkout",
+        "url": "/checkout",
+        "status": "active"
+      },
+      {
+        "step": 3,
+        "label": "Complete",
+        "url": "/complete",
+        "status": "pending"
+      }
+    ],
+    "customer_info": {
+      "title": "Account Information",
+      "description": "Your billing and contact details",
+      "existing_customer": {
+        "show_login": true,
+        "login_message": "Already have an account?",
+        "login_button": "Login",
+        "prefill_on_login": true
+      },
+      "new_customer": {
+        "fields": [
+          {
+            "name": "first_name",
+            "label": "First Name",
+            "type": "text",
+            "required": true,
+            "placeholder": "John"
+          },
+          {
+            "name": "last_name",
+            "label": "Last Name",
+            "type": "text",
+            "required": true,
+            "placeholder": "Doe"
+          },
+          {
+            "name": "email",
+            "label": "Email Address",
+            "type": "email",
+            "required": true,
+            "placeholder": "john@example.com",
+            "validation": "email",
+            "help_text": "Your login email and invoice delivery address"
+          },
+          {
+            "name": "phone",
+            "label": "Phone Number",
+            "type": "tel",
+            "required": true,
+            "placeholder": "+91 98765 43210",
+            "validation": "phone"
+          },
+          {
+            "name": "company",
+            "label": "Company Name",
+            "type": "text",
+            "required": false,
+            "placeholder": "Optional"
+          },
+          {
+            "name": "password",
+            "label": "Password",
+            "type": "password",
+            "required": true,
+            "validation": {
+              "min_length": 8,
+              "require_uppercase": true,
+              "require_number": true
+            },
+            "show_strength_meter": true
+          },
+          {
+            "name": "password_confirm",
+            "label": "Confirm Password",
+            "type": "password",
+            "required": true,
+            "validation": "match:password"
+          }
+        ]
+      }
+    },
+    "billing_address": {
+      "title": "Billing Address",
+      "fields": [
+        {
+          "name": "address_line_1",
+          "label": "Street Address",
+          "type": "text",
+          "required": true,
+          "placeholder": "123 Main Street"
+        },
+        {
+          "name": "address_line_2",
+          "label": "Address Line 2",
+          "type": "text",
+          "required": false,
+          "placeholder": "Apartment, suite, etc. (optional)"
+        },
+        {
+          "name": "city",
+          "label": "City",
+          "type": "text",
+          "required": true,
+          "placeholder": "New Delhi"
+        },
+        {
+          "name": "state",
+          "label": "State/Province",
+          "type": "text",
+          "required": true,
+          "placeholder": "Delhi"
+        },
+        {
+          "name": "postal_code",
+          "label": "Postal/ZIP Code",
+          "type": "text",
+          "required": true,
+          "placeholder": "110001"
+        },
+        {
+          "name": "country",
+          "label": "Country",
+          "type": "dropdown",
+          "required": true,
+          "options": [
+            "India",
+            "United States",
+            "United Kingdom",
+            "Canada",
+            "Australia",
+            "Singapore"
+          ],
+          "default": "India"
+        }
+      ]
+    },
+    "tax_information": {
+      "title": "Tax Information",
+      "description": "Optional - For GST invoice",
+      "fields": [
+        {
+          "name": "tax_id",
+          "label": "GST Number",
+          "type": "text",
+          "required": false,
+          "placeholder": "22AAAAA0000A1Z5",
+          "help_text": "Enter your GSTIN for GST invoice"
+        },
+        {
+          "name": "company_registration",
+          "label": "Company Registration Number",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    "payment_method": {
+      "title": "Payment Method",
+      "description": "Choose how you'd like to pay",
+      "methods": [
+        {
+          "id": "razorpay",
+          "name": "Credit/Debit Card, UPI, Netbanking",
+          "provider": "Razorpay",
+          "icon": "credit-card",
+          "popular": true,
+          "supported": [
+            "Visa",
+            "Mastercard",
+            "American Express",
+            "Rupay",
+            "UPI",
+            "Net Banking",
+            "Wallet"
+          ],
+          "description": "Secure payment powered by Razorpay"
+        },
+        {
+          "id": "bank_transfer",
+          "name": "Bank Transfer/NEFT/RTGS",
+          "icon": "bank",
+          "description": "Manual payment via bank transfer",
+          "processing_time": "1-2 business days",
+          "instructions": true
+        },
+        {
+          "id": "wallet_balance",
+          "name": "Account Balance",
+          "icon": "wallet",
+          "description": "Pay from your account wallet",
+          "requires": "sufficient_balance",
+          "show_balance": true
+        }
+      ],
+      "default": "razorpay"
+    },
+    "order_review": {
+      "title": "Order Review",
+      "show_items": true,
+      "editable": true,
+      "edit_cart_link": "/cart",
+      "summary": {
+        "subtotal": true,
+        "discount": true,
+        "tax": true,
+        "total": true,
+        "recurring": true
+      }
+    },
+    "terms_and_conditions": {
+      "required": true,
+      "text": "I have read and agree to the {terms_link} and {privacy_link}",
+      "links": {
+        "terms_link": {
+          "text": "Terms of Service",
+          "url": "/terms"
+        },
+        "privacy_link": {
+          "text": "Privacy Policy",
+          "url": "/privacy"
+        }
+      }
+    },
+    "additional_notes": {
+      "title": "Additional Notes",
+      "description": "Optional - Any special instructions or requirements",
+      "field": {
+        "name": "notes",
+        "type": "textarea",
+        "placeholder": "Enter any special instructions...",
+        "max_length": 500
+      }
+    },
+    "marketing_preferences": {
+      "title": "Communication Preferences",
+      "options": [
+        {
+          "name": "newsletter",
+          "label": "Send me newsletters and product updates",
+          "default": false
+        },
+        {
+          "name": "promotional",
+          "label": "Send me promotional offers and discounts",
+          "default": false
+        }
+      ]
+    },
+    "actions": {
+      "primary": {
+        "label": "Complete Order",
+        "action": "submit_order",
+        "style": "primary",
+        "size": "large",
+        "loading_text": "Processing...",
+        "requires": ["terms_accepted", "payment_method_selected"]
+      },
+      "secondary": {
+        "label": "Back to Cart",
+        "action": "back_to_cart",
+        "style": "secondary"
+      }
+    }
+  },
+  "validations": {
+    "client_side": true,
+    "server_side": true,
+    "real_time": true
+  },
+  "security": {
+    "ssl_required": true,
+    "captcha_on_submission": false,
+    "fraud_detection": true,
+    "pci_compliant": true
+  },
+  "error_handling": {
+    "show_field_errors": true,
+    "show_summary_errors": true,
+    "scroll_to_error": true
+  }
+}

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Billing Country Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        input, select, button {
+            margin: 5px;
+            padding: 8px;
+            min-width: 200px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { border-color: #28a745; background-color: #d4edda; }
+        .error { border-color: #dc3545; background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>🌍 Test Billing Country Storage & Retrieval</h1>
+    
+    <div class="section">
+        <h2>🔐 Login (Required for Testing)</h2>
+        <input type="email" id="loginEmail" placeholder="Email" value="test@example.com">
+        <input type="password" id="loginPassword" placeholder="Password" value="password">
+        <button onclick="login()">Login</button>
+        <div id="loginResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <div class="section">
+        <h2>📋 Test Country Storage</h2>
+        <select id="countrySelect">
+            <option value="United States">United States</option>
+            <option value="India">India</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Germany">Germany</option>
+            <option value="Japan">Japan</option>
+            <option value="Australia">Australia</option>
+            <option value="France">France</option>
+            <option value="Canada">Canada</option>
+            <option value="Singapore">Singapore</option>
+            <option value="Netherlands">Netherlands</option>
+        </select>
+        <input type="text" id="cityInput" placeholder="City" value="Test City">
+        <input type="text" id="stateInput" placeholder="State/Province" value="Test State">
+        <input type="text" id="streetInput" placeholder="Street Address" value="123 Test Street">
+        <input type="text" id="postalInput" placeholder="Postal Code" value="12345">
+        <input type="text" id="companyInput" placeholder="Company Name" value="Test Company">
+        <button onclick="saveBillingSettings()">💾 Save Billing Settings</button>
+        <div id="saveResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <div class="section">
+        <h2>🔍 Retrieve Billing Settings</h2>
+        <button onclick="loadBillingSettings()">📥 Load Settings</button>
+        <div id="loadResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8001';
+        let authToken = localStorage.getItem('auth_token') || '';
+
+        function showResponse(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `response ${isError ? 'error' : 'success'}`;
+            element.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.access_token) {
+                    authToken = data.access_token;
+                    localStorage.setItem('auth_token', authToken);
+                    showResponse('loginResponse', {
+                        message: '✅ Login successful!',
+                        token_type: data.token_type,
+                        expires: 'Session active'
+                    });
+                } else {
+                    showResponse('loginResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('loginResponse', `❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function saveBillingSettings() {
+            if (!authToken) {
+                showResponse('saveResponse', '❌ Please login first!', true);
+                return;
+            }
+
+            const billingData = {
+                country: document.getElementById('countrySelect').value,
+                city: document.getElementById('cityInput').value,
+                state: document.getElementById('stateInput').value,
+                street: document.getElementById('streetInput').value,
+                postal_code: document.getElementById('postalInput').value,
+                company_name: document.getElementById('companyInput').value,
+                auto_renewal: true,
+                billing_alerts: true,
+                invoice_delivery: 'email'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/billing/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(billingData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse('saveResponse', {
+                        message: '✅ Billing settings saved successfully!',
+                        country: data.country,
+                        city: data.city,
+                        state: data.state,
+                        company_name: data.company_name,
+                        saved_at: new Date().toISOString()
+                    });
+                } else {
+                    showResponse('saveResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('saveResponse', `❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function loadBillingSettings() {
+            if (!authToken) {
+                showResponse('loadResponse', '❌ Please login first!', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/billing/settings`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Also update the form with retrieved data
+                    if (data.country) document.getElementById('countrySelect').value = data.country;
+                    if (data.city) document.getElementById('cityInput').value = data.city;
+                    if (data.state) document.getElementById('stateInput').value = data.state;
+                    if (data.street) document.getElementById('streetInput').value = data.street;
+                    if (data.postal_code) document.getElementById('postalInput').value = data.postal_code;
+                    if (data.company_name) document.getElementById('companyInput').value = data.company_name;
+
+                    showResponse('loadResponse', {
+                        message: '✅ Billing settings loaded successfully!',
+                        country: data.country,
+                        city: data.city,
+                        state: data.state,
+                        street: data.street,
+                        postal_code: data.postal_code,
+                        company_name: data.company_name,
+                        auto_renewal: data.auto_renewal,
+                        created_at: data.created_at,
+                        updated_at: data.updated_at
+                    });
+                } else {
+                    showResponse('loadResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('loadResponse', `❌ Error: ${error.message}`, true);
+            }
+        }
+
+        // Auto-load token if already logged in
+        if (authToken) {
+            document.querySelector('#loginResponse').style.display = 'block';
+            document.querySelector('#loginResponse').className = 'response success';
+            document.querySelector('#loginResponse').textContent = '✅ Previously logged in (token found)';
+        }
+    </script>
+</body>
+</html>

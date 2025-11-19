@@ -1,0 +1,301 @@
+{
+  "page_title": "Invoice",
+  "description": "Invoice display and download page",
+  "invoice_structure": {
+    "header": {
+      "company_logo": true,
+      "company_name": "BIDUA Hosting",
+      "company_address": [
+        "123 Business Street",
+        "Noida, Uttar Pradesh 201301",
+        "India"
+      ],
+      "company_contact": {
+        "phone": "+91 120 416 8464",
+        "email": "billing@bidua.com",
+        "website": "www.bidua.com"
+      },
+      "company_tax_info": {
+        "gstin": "09XXXXXXX1234",
+        "pan": "AAACB1234C"
+      }
+    },
+    "invoice_details": {
+      "invoice_number": {
+        "label": "Invoice Number",
+        "format": "INV-2025-XXXXX",
+        "example": "INV-2025-00123"
+      },
+      "invoice_date": {
+        "label": "Invoice Date",
+        "format": "DD/MM/YYYY"
+      },
+      "due_date": {
+        "label": "Due Date",
+        "format": "DD/MM/YYYY",
+        "calculation": "invoice_date + 7 days"
+      },
+      "order_number": {
+        "label": "Order Number",
+        "format": "ORD-XXXXXXXX"
+      },
+      "status": {
+        "label": "Status",
+        "options": [
+          {
+            "value": "paid",
+            "label": "Paid",
+            "color": "green"
+          },
+          {
+            "value": "unpaid",
+            "label": "Unpaid",
+            "color": "orange"
+          },
+          {
+            "value": "cancelled",
+            "label": "Cancelled",
+            "color": "red"
+          },
+          {
+            "value": "refunded",
+            "label": "Refunded",
+            "color": "blue"
+          }
+        ]
+      }
+    },
+    "billing_info": {
+      "title": "Bill To",
+      "fields": [
+        "customer_name",
+        "company_name",
+        "billing_address",
+        "city_state_postal",
+        "country",
+        "email",
+        "phone",
+        "gstin"
+      ]
+    },
+    "line_items": {
+      "table_columns": [
+        {
+          "key": "description",
+          "label": "Description",
+          "width": "50%"
+        },
+        {
+          "key": "quantity",
+          "label": "Qty",
+          "width": "10%",
+          "align": "center"
+        },
+        {
+          "key": "unit_price",
+          "label": "Unit Price",
+          "width": "15%",
+          "align": "right"
+        },
+        {
+          "key": "amount",
+          "label": "Amount",
+          "width": "25%",
+          "align": "right"
+        }
+      ],
+      "item_structure": {
+        "product_name": "General Purpose VM - 8GB",
+        "billing_cycle": "Annual",
+        "description_details": [
+          "4 vCPU Cores",
+          "8GB RAM",
+          "200GB NVMe SSD Storage",
+          "2TB Bandwidth",
+          "Ubuntu 22.04 LTS",
+          "Datacenter: Noida, India"
+        ],
+        "configurable_options": [
+          {
+            "name": "Additional IPv4",
+            "quantity": 2,
+            "unit_price": 200,
+            "amount": 400
+          },
+          {
+            "name": "Daily Backup Service",
+            "quantity": 1,
+            "unit_price": 500,
+            "amount": 500
+          }
+        ],
+        "quantity": 1,
+        "unit_price": 5100,
+        "amount": 5100
+      }
+    },
+    "pricing_summary": {
+      "subtotal": {
+        "label": "Subtotal",
+        "calculation": "sum_of_all_items"
+      },
+      "discount": {
+        "label": "Discount",
+        "conditional": true,
+        "types": [
+          "promo_code",
+          "loyalty_discount",
+          "volume_discount"
+        ]
+      },
+      "taxable_amount": {
+        "label": "Taxable Amount",
+        "calculation": "subtotal - discount"
+      },
+      "tax": {
+        "label": "IGST @ 18%",
+        "rate": 18,
+        "calculation": "taxable_amount * 0.18",
+        "breakdown": [
+          {
+            "label": "CGST (9%)",
+            "rate": 9
+          },
+          {
+            "label": "SGST (9%)",
+            "rate": 9
+          }
+        ]
+      },
+      "total": {
+        "label": "Total Amount",
+        "calculation": "taxable_amount + tax",
+        "style": "bold",
+        "size": "large"
+      },
+      "amount_paid": {
+        "label": "Amount Paid",
+        "conditional": true
+      },
+      "balance_due": {
+        "label": "Balance Due",
+        "calculation": "total - amount_paid",
+        "style": "highlight"
+      }
+    },
+    "payment_details": {
+      "title": "Payment Information",
+      "fields": [
+        {
+          "label": "Payment Method",
+          "value": "Razorpay - Credit Card"
+        },
+        {
+          "label": "Transaction ID",
+          "value": "pay_XXXXXXXXXXXXXXX"
+        },
+        {
+          "label": "Payment Date",
+          "value": "DD/MM/YYYY HH:MM"
+        },
+        {
+          "label": "Payment Status",
+          "value": "Success"
+        }
+      ]
+    },
+    "bank_details": {
+      "title": "Bank Transfer Details",
+      "description": "For unpaid invoices - Pay via bank transfer",
+      "conditional": "status == unpaid",
+      "details": {
+        "bank_name": "HDFC Bank",
+        "account_name": "BIDUA IT Services Pvt Ltd",
+        "account_number": "12345678901234",
+        "ifsc_code": "HDFC0001234",
+        "account_type": "Current Account",
+        "branch": "Noida Sector 62"
+      },
+      "instructions": [
+        "Please use Invoice Number as payment reference",
+        "Email payment confirmation to billing@bidua.com",
+        "Processing time: 1-2 business days"
+      ]
+    },
+    "terms_and_notes": {
+      "payment_terms": [
+        "Payment due within 7 days",
+        "Late payment may result in service suspension",
+        "Refunds processed within 7-14 business days"
+      ],
+      "notes": [
+        "Thank you for your business!",
+        "For support queries: support@bidua.com",
+        "Call us: +91 120 416 8464 (Mon-Sat, 9:00-18:00)"
+      ]
+    },
+    "footer": {
+      "company_registration": "CIN: U72900DL2024PTC123456",
+      "authorized_signatory": true,
+      "signature_image": true,
+      "company_seal": true
+    },
+    "actions": {
+      "download_pdf": {
+        "label": "Download PDF",
+        "icon": "download",
+        "action": "generate_pdf"
+      },
+      "print": {
+        "label": "Print Invoice",
+        "icon": "printer",
+        "action": "print"
+      },
+      "email": {
+        "label": "Email Invoice",
+        "icon": "mail",
+        "action": "email_invoice"
+      },
+      "pay_now": {
+        "label": "Pay Now",
+        "icon": "credit-card",
+        "action": "payment_gateway",
+        "conditional": "status == unpaid",
+        "style": "primary"
+      }
+    }
+  },
+  "invoice_types": {
+    "proforma": {
+      "description": "Proforma invoice before payment",
+      "watermark": "PROFORMA INVOICE"
+    },
+    "tax_invoice": {
+      "description": "Final invoice after payment",
+      "watermark": null,
+      "requires": "payment_completed"
+    },
+    "credit_note": {
+      "description": "Credit note for refunds",
+      "prefix": "CN-",
+      "linked_to": "original_invoice"
+    }
+  },
+  "design": {
+    "color_scheme": {
+      "primary": "#0891b2",
+      "secondary": "#14b8a6",
+      "text": "#1e293b",
+      "background": "#ffffff"
+    },
+    "fonts": {
+      "heading": "Inter, sans-serif",
+      "body": "Inter, sans-serif"
+    },
+    "branding": {
+      "show_logo": true,
+      "show_watermark": true,
+      "professional_layout": true
+    }
+  }
+}

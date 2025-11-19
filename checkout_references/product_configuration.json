@@ -1,0 +1,233 @@
+{
+  "page_title": "Configure Product",
+  "description": "Product configuration page where users customize their server before adding to cart",
+  "sections": {
+    "product_selection": {
+      "title": "Choose Your Configuration",
+      "fields": [
+        {
+          "type": "dropdown",
+          "name": "billing_cycle",
+          "label": "Billing Cycle",
+          "required": true,
+          "options": [
+            {
+              "value": "monthly",
+              "label": "Monthly",
+              "discount": 0,
+              "description": "Pay monthly, cancel anytime"
+            },
+            {
+              "value": "quarterly",
+              "label": "Quarterly (3 Months)",
+              "discount": 5,
+              "description": "Save 5% - Billed every 3 months"
+            },
+            {
+              "value": "semiannually",
+              "label": "Semi-Annually (6 Months)",
+              "discount": 10,
+              "description": "Save 10% - Billed every 6 months"
+            },
+            {
+              "value": "annually",
+              "label": "Annually (12 Months)",
+              "discount": 15,
+              "description": "Save 15% - Billed yearly"
+            },
+            {
+              "value": "biennially",
+              "label": "Biennially (24 Months)",
+              "discount": 20,
+              "description": "Save 20% - Billed every 2 years"
+            },
+            {
+              "value": "triennially",
+              "label": "Triennially (36 Months)",
+              "discount": 25,
+              "description": "Save 25% - Billed every 3 years"
+            }
+          ]
+        },
+        {
+          "type": "dropdown",
+          "name": "operating_system",
+          "label": "Operating System",
+          "required": true,
+          "options": [
+            {
+              "value": "ubuntu-22.04",
+              "label": "Ubuntu 22.04 LTS",
+              "icon": "linux",
+              "popular": true
+            },
+            {
+              "value": "ubuntu-20.04",
+              "label": "Ubuntu 20.04 LTS",
+              "icon": "linux"
+            },
+            {
+              "value": "centos-8",
+              "label": "CentOS 8",
+              "icon": "linux"
+            },
+            {
+              "value": "debian-11",
+              "label": "Debian 11",
+              "icon": "linux"
+            },
+            {
+              "value": "rocky-linux-9",
+              "label": "Rocky Linux 9",
+              "icon": "linux"
+            },
+            {
+              "value": "windows-server-2022",
+              "label": "Windows Server 2022",
+              "icon": "windows",
+              "additional_cost": 1500
+            },
+            {
+              "value": "windows-server-2019",
+              "label": "Windows Server 2019",
+              "icon": "windows",
+              "additional_cost": 1500
+            }
+          ]
+        },
+        {
+          "type": "dropdown",
+          "name": "datacenter_location",
+          "label": "Datacenter Location",
+          "required": true,
+          "options": [
+            {
+              "value": "noida-india",
+              "label": "Noida, India",
+              "flag": "🇮🇳",
+              "popular": true
+            },
+            {
+              "value": "milton-keynes-uk",
+              "label": "Milton Keynes, United Kingdom",
+              "flag": "🇬🇧"
+            },
+            {
+              "value": "singapore",
+              "label": "Singapore",
+              "flag": "🇸🇬",
+              "coming_soon": true
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "name": "hostname",
+          "label": "Server Hostname",
+          "placeholder": "server1.example.com",
+          "required": true,
+          "help_text": "Fully qualified domain name for your server"
+        },
+        {
+          "type": "text",
+          "name": "root_password",
+          "label": "Root Password",
+          "input_type": "password",
+          "required": true,
+          "help_text": "Set initial root/administrator password",
+          "validation": {
+            "min_length": 8,
+            "require_uppercase": true,
+            "require_lowercase": true,
+            "require_number": true,
+            "require_special": true
+          }
+        }
+      ]
+    },
+    "configurable_options": {
+      "title": "Configurable Options",
+      "description": "Customize your server resources",
+      "options": [
+        {
+          "name": "additional_ipv4",
+          "label": "Additional IPv4 Addresses",
+          "type": "quantity",
+          "price_per_unit": 200,
+          "unit": "IP",
+          "min": 0,
+          "max": 10,
+          "help_text": "₹200/month per additional IPv4 address"
+        },
+        {
+          "name": "backup_service",
+          "label": "Automated Daily Backups",
+          "type": "checkbox",
+          "price": 500,
+          "billing": "monthly",
+          "description": "Daily automated backups with 7-day retention"
+        },
+        {
+          "name": "managed_service",
+          "label": "Managed Server Service",
+          "type": "checkbox",
+          "price": 2000,
+          "billing": "monthly",
+          "description": "Expert server management, monitoring, and support"
+        },
+        {
+          "name": "ddos_protection",
+          "label": "Advanced DDoS Protection",
+          "type": "radio",
+          "options": [
+            {
+              "value": "none",
+              "label": "Basic (Included)",
+              "price": 0
+            },
+            {
+              "value": "advanced",
+              "label": "Advanced DDoS Protection",
+              "price": 1000,
+              "description": "Up to 100 Gbps protection"
+            },
+            {
+              "value": "enterprise",
+              "label": "Enterprise DDoS Protection",
+              "price": 3000,
+              "description": "Unlimited protection with real-time mitigation"
+            }
+          ]
+        }
+      ]
+    },
+    "price_summary": {
+      "title": "Order Summary",
+      "fields": [
+        "base_price",
+        "configurable_options_total",
+        "subtotal",
+        "discount_amount",
+        "tax_amount",
+        "total_due_today",
+        "recurring_amount"
+      ],
+      "tax_info": {
+        "india_gst": 18,
+        "display": "IGST @ 18.00%"
+      }
+    },
+    "actions": {
+      "continue": "Continue",
+      "add_to_cart": "Add to Cart",
+      "configure_later": "Configure Later",
+      "cancel": "Cancel"
+    }
+  },
+  "notes": [
+    "Server deployment typically takes 5-10 minutes",
+    "You can upgrade/downgrade resources anytime",
+    "Full root access provided",
+    "99.9% uptime SLA guaranteed"
+  ]
+}
