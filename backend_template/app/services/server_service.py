@@ -278,7 +278,14 @@ class ServerService:
     async def update_user_server(
         self, db: AsyncSession, user_id: int, server_id: int, server_update: ServerUpdate
     ) -> Optional[Server]:
-        server = await self.get_user_server(db, user_id, server_id)
+        # Get the actual Server object, not the enriched dict
+        result = await db.execute(
+            select(Server).where(
+                Server.id == server_id,
+                Server.user_id == user_id,
+            )
+        )
+        server = result.scalar_one_or_none()
         if not server:
             return None
 
@@ -316,7 +323,14 @@ class ServerService:
     async def perform_user_server_action(
         self, db: AsyncSession, user_id: int, server_id: int, action: str
     ) -> bool:
-        server = await self.get_user_server(db, user_id, server_id)
+        # Check if server belongs to user
+        result = await db.execute(
+            select(Server).where(
+                Server.id == server_id,
+                Server.user_id == user_id,
+            )
+        )
+        server = result.scalar_one_or_none()
         if not server:
             return False
         return await self.perform_server_action(db, server_id, action)
@@ -334,7 +348,14 @@ class ServerService:
         return True
 
     async def delete_user_server(self, db: AsyncSession, user_id: int, server_id: int) -> bool:
-        server = await self.get_user_server(db, user_id, server_id)
+        # Get the actual Server object to delete
+        result = await db.execute(
+            select(Server).where(
+                Server.id == server_id,
+                Server.user_id == user_id,
+            )
+        )
+        server = result.scalar_one_or_none()
         if not server:
             return False
 
@@ -484,7 +505,13 @@ class ServerService:
             select(Addon).where(Addon.id.in_(addon_ids))
         )
         addons = result.scalars().all()
-        return [addon.to_dict() for addon in addons]
+        
+        # Convert to dict format
+        addon_list = []
+        for addon in addons:
+            addon_list.append(addon.to_dict())
+        
+        return addon_list
 
     async def get_services_from_ids(self, db: AsyncSession, service_ids: List[int]) -> List[Dict[str, Any]]:
         """Fetch service details from service IDs"""
@@ -497,4 +524,10 @@ class ServerService:
             select(Service).where(Service.id.in_(service_ids))
         )
         services = result.scalars().all()
-        return [service.to_dict() for service in services]
+        
+        # Convert to dict format
+        service_list = []
+        for service in services:
+            service_list.append(service.to_dict())
+        
+        return service_list
