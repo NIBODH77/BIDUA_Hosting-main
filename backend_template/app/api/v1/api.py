@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, users, plans, orders, servers, 
-    billing, dashboard, payments, support, 
+    billing, dashboard, payments, 
     referrals, affiliate, admin, settings,
     invoices, addons, admin_pricing, attachments,
     support_enhanced, countries, services
@@ -29,5 +29,4 @@ api_router.include_router(billing.router, prefix="/billing", tags=["billing"])
 api_router.include_router(invoices.router, prefix="/invoices", tags=["invoices"])
 api_router.include_router(referrals.router, prefix="/referrals", tags=["referrals"])
 api_router.include_router(affiliate.router, prefix="/affiliate", tags=["affiliate"])  # New affiliate system
-api_router.include_router(support.router, prefix="/support", tags=["support"])
 api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
