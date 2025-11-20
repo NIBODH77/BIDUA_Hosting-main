@@ -106,15 +106,24 @@ class ServerService:
         addon_details = []
         service_details = []
         
+        print(f"🔍 Server {server.id} specs: {server.specs}")
+        
         if server.specs:
             addon_ids = server.specs.get('addon_ids', [])
             service_ids = server.specs.get('service_ids', [])
             
+            print(f"📦 Found addon_ids: {addon_ids}")
+            print(f"🔧 Found service_ids: {service_ids}")
+            
             if addon_ids:
                 addon_details = await self.get_addons_from_ids(db, addon_ids)
+                print(f"✅ Fetched {len(addon_details)} addons")
             
             if service_ids:
                 service_details = await self.get_services_from_ids(db, service_ids)
+                print(f"✅ Fetched {len(service_details)} services")
+        else:
+            print(f"⚠️ Server {server.id} has no specs field")
         
         # Convert server to dict and add details
         server_dict = {
@@ -499,17 +508,24 @@ class ServerService:
         from app.models.addon import Addon
         
         if not addon_ids:
+            print("⚠️ No addon IDs provided")
             return []
+        
+        print(f"🔍 Fetching addons for IDs: {addon_ids}")
         
         result = await db.execute(
             select(Addon).where(Addon.id.in_(addon_ids))
         )
         addons = result.scalars().all()
         
+        print(f"📦 Found {len(addons)} addons in database")
+        
         # Convert to dict format
         addon_list = []
         for addon in addons:
-            addon_list.append(addon.to_dict())
+            addon_dict = addon.to_dict()
+            print(f"  ✓ Addon: {addon_dict['name']} (ID: {addon_dict['id']})")
+            addon_list.append(addon_dict)
         
         return addon_list
 
@@ -518,16 +534,23 @@ class ServerService:
         from app.models.service import Service
         
         if not service_ids:
+            print("⚠️ No service IDs provided")
             return []
+        
+        print(f"🔍 Fetching services for IDs: {service_ids}")
         
         result = await db.execute(
             select(Service).where(Service.id.in_(service_ids))
         )
         services = result.scalars().all()
         
+        print(f"🔧 Found {len(services)} services in database")
+        
         # Convert to dict format
         service_list = []
         for service in services:
-            service_list.append(service.to_dict())
+            service_dict = service.to_dict()
+            print(f"  ✓ Service: {service_dict['name']} (ID: {service_dict['id']})")
+            service_list.append(service_dict)
         
         return service_list
