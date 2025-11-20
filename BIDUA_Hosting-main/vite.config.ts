@@ -4,18 +4,20 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    // Let Vite choose any available port (no strict binding)
-    // Remove explicit port so it falls back to 5173+ and picks the next free one
-    // strictPort false allows automatic fallback to an open port
-    // port: 5173, // intentionally omitted for dynamic selection
+    port: 5000,
+    host: '0.0.0.0',
     strictPort: false,
-    host: true,
-    // Use default HMR settings so client port matches the chosen server port
     hmr: {
       overlay: true,
     },
     watch: {
       usePolling: true,
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
   optimizeDeps: {

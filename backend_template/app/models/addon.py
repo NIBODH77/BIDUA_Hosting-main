@@ -19,6 +19,7 @@ class AddonCategory(str, enum.Enum):
     SUPPORT = "support"
     MANAGEMENT = "management"
     SECURITY = "security"
+    CPU = "cpu"
 
 
 class BillingType(str, enum.Enum):
