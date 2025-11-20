@@ -278,9 +278,18 @@ class OrderService:
 
             # ✅ 9️⃣ Create OrderAddon records
             for addon_data in addon_records:
+                # Fetch addon details for metadata
+                addon_result = await db.execute(
+                    select(Addon).where(Addon.id == addon_data["addon_id"])
+                )
+                addon = addon_result.scalar_one()
+                
                 order_addon = OrderAddon(
                     order_id=new_order.id,
                     addon_id=addon_data["addon_id"],
+                    addon_name=addon.name,
+                    addon_category=addon.category.value,
+                    addon_description=addon.description,
                     unit_price=addon_data["unit_price"],
                     quantity=addon_data["quantity"],
                     subtotal=addon_data["subtotal"],
@@ -288,21 +297,34 @@ class OrderService:
                     tax_amount=addon_data["tax_amount"],
                     total_amount=addon_data["total_amount"],
                     billing_type=addon_data["billing_type"],
+                    unit_label=addon.unit_label,
                     is_active=True,
                 )
                 db.add(order_addon)
 
             # ✅ 🔟 Create OrderService records
             for service_data in service_records:
+                # Fetch service details for metadata
+                service_result = await db.execute(
+                    select(Service).where(Service.id == service_data["service_id"])
+                )
+                service = service_result.scalar_one()
+                
                 order_service = OrderServiceModel(
                     order_id=new_order.id,
                     service_id=service_data["service_id"],
+                    service_name=service.name,
+                    service_category=service.category.value,
+                    service_description=service.description,
                     unit_price=service_data["unit_price"],
                     quantity=service_data["quantity"],
                     subtotal=service_data["subtotal"],
                     discount_amount=service_data["discount_amount"],
                     tax_amount=service_data["tax_amount"],
                     total_amount=service_data["total_amount"],
+                    billing_type=service.billing_type,
+                    duration_hours=service.duration_hours,
+                    sla_response_time=service.sla_response_time,
                     service_status=service_data["service_status"],
                 )
                 db.add(order_service)
