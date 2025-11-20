@@ -22,7 +22,7 @@ class ServerService:
     # --------------------------------------------------------
     # ✅ User-specific queries
     # --------------------------------------------------------
-    async def get_user_servers(self, db: AsyncSession, user_id: int) -> List[Server]:
+    async def get_user_servers(self, db: AsyncSession, user_id: int) -> List[Dict[str, Any]]:
         result = await db.execute(
             select(Server)
             .options(
@@ -32,7 +32,54 @@ class ServerService:
             .where(Server.user_id == user_id)
         )
         servers = result.scalars().all()
-        return list(servers)
+        
+        # Enrich each server with addon and service details
+        enriched_servers = []
+        for server in servers:
+            addon_details = []
+            service_details = []
+            
+            if server.specs:
+                addon_ids = server.specs.get('addon_ids', [])
+                service_ids = server.specs.get('service_ids', [])
+                
+                if addon_ids:
+                    addon_details = await self.get_addons_from_ids(db, addon_ids)
+                
+                if service_ids:
+                    service_details = await self.get_services_from_ids(db, service_ids)
+            
+            server_dict = {
+                "id": server.id,
+                "user_id": server.user_id,
+                "order_id": server.order_id,
+                "server_name": server.server_name,
+                "hostname": server.hostname or "",
+                "ip_address": server.ip_address,
+                "server_status": server.server_status,
+                "server_type": server.server_type or "vps",
+                "vcpu": server.vcpu or 1,
+                "ram_gb": server.ram_gb,
+                "storage_gb": server.storage_gb,
+                "bandwidth_gb": server.bandwidth_gb or 1000,
+                "operating_system": server.operating_system,
+                "plan_id": server.plan_id or 0,
+                "plan_name": server.plan_name or "",
+                "monthly_cost": float(server.monthly_cost) if server.monthly_cost else 0.0,
+                "billing_cycle": server.billing_cycle or "monthly",
+                "created_date": server.created_date,
+                "expiry_date": server.expiry_date,
+                "specs": server.specs,
+                "notes": server.notes,
+                "created_at": server.created_at,
+                "updated_at": server.updated_at,
+                "addons": addon_details,
+                "services": service_details
+            }
+            
+            enriched_servers.append(server_dict)
+        
+        return enriched_servers
 
     async def get_user_active_servers(self, db: AsyncSession, user_id: int) -> List[Server]:
         result = await db.execute(
