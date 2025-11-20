@@ -60,11 +60,20 @@ class ServerService:
                 addon_ids = server.specs.get('addon_ids', [])
                 service_ids = server.specs.get('service_ids', [])
                 
+                print(f"🔍 Server {server.id} - No order_id, checking specs")
+                print(f"📦 Specs content: {server.specs}")
+                print(f"📦 Extracted addon_ids: {addon_ids}")
+                print(f"🔧 Extracted service_ids: {service_ids}")
+                
                 if addon_ids:
+                    print(f"🔄 Fetching {len(addon_ids)} addons...")
                     addon_details = await self.get_addons_from_ids(db, addon_ids)
+                    print(f"✅ Retrieved {len(addon_details)} addon details")
                 
                 if service_ids:
+                    print(f"🔄 Fetching {len(service_ids)} services...")
                     service_details = await self.get_services_from_ids(db, service_ids)
+                    print(f"✅ Retrieved {len(service_details)} service details")
             
             server_dict = {
                 "id": server.id,
@@ -93,6 +102,8 @@ class ServerService:
                 "addons": addon_details,
                 "services": service_details
             }
+            
+            print(f"✅ Server {server.id} enriched with {len(addon_details)} addons and {len(service_details)} services")
             
             enriched_servers.append(server_dict)
         
@@ -525,49 +536,65 @@ class ServerService:
         from app.models.addon import Addon
         
         if not addon_ids:
-            print("⚠️ No addon IDs provided")
+            print("⚠️ No addon IDs provided to get_addons_from_ids")
             return []
         
-        print(f"🔍 Fetching addons for IDs: {addon_ids}")
+        print(f"🔍 [get_addons_from_ids] Querying for addon IDs: {addon_ids}")
         
-        result = await db.execute(
-            select(Addon).where(Addon.id.in_(addon_ids))
-        )
-        addons = result.scalars().all()
-        
-        print(f"📦 Found {len(addons)} addons in database")
-        
-        # Convert to dict format
-        addon_list = []
-        for addon in addons:
-            addon_dict = addon.to_dict()
-            print(f"  ✓ Addon: {addon_dict['name']} (ID: {addon_dict['id']})")
-            addon_list.append(addon_dict)
-        
-        return addon_list
+        try:
+            result = await db.execute(
+                select(Addon).where(Addon.id.in_(addon_ids))
+            )
+            addons = result.scalars().all()
+            
+            print(f"📦 [get_addons_from_ids] Database returned {len(addons)} addons")
+            
+            if len(addons) != len(addon_ids):
+                print(f"⚠️ Warning: Requested {len(addon_ids)} addons, but only found {len(addons)}")
+            
+            # Convert to dict format
+            addon_list = []
+            for addon in addons:
+                addon_dict = addon.to_dict()
+                print(f"  ✓ Addon found: {addon_dict['name']} (ID: {addon_dict['id']}, Price: {addon_dict['price']})")
+                addon_list.append(addon_dict)
+            
+            print(f"📦 [get_addons_from_ids] Returning {len(addon_list)} addon dictionaries")
+            return addon_list
+        except Exception as e:
+            print(f"❌ Error in get_addons_from_ids: {e}")
+            return []
 
     async def get_services_from_ids(self, db: AsyncSession, service_ids: List[int]) -> List[Dict[str, Any]]:
         """Fetch service details from service IDs"""
         from app.models.service import Service
         
         if not service_ids:
-            print("⚠️ No service IDs provided")
+            print("⚠️ No service IDs provided to get_services_from_ids")
             return []
         
-        print(f"🔍 Fetching services for IDs: {service_ids}")
+        print(f"🔍 [get_services_from_ids] Querying for service IDs: {service_ids}")
         
-        result = await db.execute(
-            select(Service).where(Service.id.in_(service_ids))
-        )
-        services = result.scalars().all()
-        
-        print(f"🔧 Found {len(services)} services in database")
-        
-        # Convert to dict format
-        service_list = []
-        for service in services:
-            service_dict = service.to_dict()
-            print(f"  ✓ Service: {service_dict['name']} (ID: {service_dict['id']})")
-            service_list.append(service_dict)
-        
-        return service_list
+        try:
+            result = await db.execute(
+                select(Service).where(Service.id.in_(service_ids))
+            )
+            services = result.scalars().all()
+            
+            print(f"🔧 [get_services_from_ids] Database returned {len(services)} services")
+            
+            if len(services) != len(service_ids):
+                print(f"⚠️ Warning: Requested {len(service_ids)} services, but only found {len(services)}")
+            
+            # Convert to dict format
+            service_list = []
+            for service in services:
+                service_dict = service.to_dict()
+                print(f"  ✓ Service found: {service_dict['name']} (ID: {service_dict['id']}, Price: {service_dict['price']})")
+                service_list.append(service_dict)
+            
+            print(f"🔧 [get_services_from_ids] Returning {len(service_list)} service dictionaries")
+            return service_list
+        except Exception as e:
+            print(f"❌ Error in get_services_from_ids: {e}")
+            return []
