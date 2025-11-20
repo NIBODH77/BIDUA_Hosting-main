@@ -43,9 +43,21 @@ class ServerService:
             addon_details = []
             service_details = []
             
+            # Priority 1: Get from order if linked
             if server.order_id and server.order:
                 addon_ids = [oa.addon_id for oa in server.order.order_addons if oa.is_active]
                 service_ids = [os.service_id for os in server.order.order_services if os.is_active]
+                
+                if addon_ids:
+                    addon_details = await self.get_addons_from_ids(db, addon_ids)
+                
+                if service_ids:
+                    service_details = await self.get_services_from_ids(db, service_ids)
+            
+            # Priority 2: Fallback to specs if order not linked
+            elif server.specs:
+                addon_ids = server.specs.get('addon_ids', [])
+                service_ids = server.specs.get('service_ids', [])
                 
                 if addon_ids:
                     addon_details = await self.get_addons_from_ids(db, addon_ids)

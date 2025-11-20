@@ -151,26 +151,26 @@ class OrderService:
             addon_total = Decimal("0.00")
             addon_records = []
             invoice_addon_items = []
-            
+
             if order_data.addon_ids:
                 addon_result = await db.execute(
                     select(Addon).where(Addon.id.in_(order_data.addon_ids), Addon.is_active == True)
                 )
                 addons = addon_result.scalars().all()
-                
+
                 for addon in addons:
                     unit_price = Decimal(str(addon.price))
                     quantity = Decimal("1")  # Default quantity, can be extended later
                     subtotal = unit_price * quantity
-                    
+
                     # Apply same discount as plan
                     addon_discount = (subtotal * discount_percent) / Decimal("100.00")
                     addon_discounted = subtotal - addon_discount
                     addon_tax = (addon_discounted * Decimal("18.00")) / Decimal("100.00")
                     addon_item_total = addon_discounted + addon_tax
-                    
+
                     addon_total += addon_item_total
-                    
+
                     # Store for OrderAddon creation later
                     addon_records.append({
                         "addon_id": addon.id,
@@ -182,7 +182,7 @@ class OrderService:
                         "total_amount": addon_item_total,
                         "billing_type": addon.billing_type,
                     })
-                    
+
                     # Invoice line item
                     invoice_addon_items.append({
                         "description": f"{addon.name} - {addon.category.value}",
@@ -200,26 +200,26 @@ class OrderService:
             service_total = Decimal("0.00")
             service_records = []
             invoice_service_items = []
-            
+
             if order_data.service_ids:
                 service_result = await db.execute(
                     select(Service).where(Service.id.in_(order_data.service_ids), Service.is_active == True)
                 )
                 services = service_result.scalars().all()
-                
+
                 for service in services:
                     unit_price = Decimal(str(service.base_price))
                     quantity = Decimal("1")
                     subtotal = unit_price * quantity
-                    
+
                     # Apply same discount as plan
                     service_discount = (subtotal * discount_percent) / Decimal("100.00")
                     service_discounted = subtotal - service_discount
                     service_tax = (service_discounted * Decimal("18.00")) / Decimal("100.00")
                     service_item_total = service_discounted + service_tax
-                    
+
                     service_total += service_item_total
-                    
+
                     # Store for OrderService creation later
                     service_records.append({
                         "service_id": service.id,
@@ -231,7 +231,7 @@ class OrderService:
                         "total_amount": service_item_total,
                         "service_status": "pending",
                     })
-                    
+
                     # Invoice line item
                     invoice_service_items.append({
                         "description": f"{service.name} - {service.category.value}",
@@ -248,10 +248,10 @@ class OrderService:
             # ✅ 7️⃣ Calculate final totals (Plan + Addons + Services)
             total_discount_amount = plan_discount_amount + sum(a["discount_amount"] for a in addon_records) + sum(s["discount_amount"] for s in service_records)
             total_discounted = plan_discounted_total + sum(a["subtotal"] - a["discount_amount"] for a in addon_records) + sum(s["subtotal"] - s["discount_amount"] for s in service_records)
-            
+
             # GST calculation (18% on total discounted amount)
             gst_amount = (total_discounted * Decimal("18.00")) / Decimal("100.00")
-            
+
             # Grand total for customer invoice
             grand_total = total_discounted + gst_amount
 
@@ -309,7 +309,7 @@ class OrderService:
 
             # ✅ 1️⃣1️⃣ Create Invoice with all line items
             invoice_number = await self._generate_invoice_number(db)
-            
+
             # Build complete invoice items array: plan + addons + services
             plan_item = {
                 "description": f"{plan.name} - {order_data.billing_cycle.title()} Plan",
@@ -323,9 +323,9 @@ class OrderService:
                 "gst_amount": float((plan_discounted_total * Decimal("18.00")) / Decimal("100.00")),
                 "total_amount": float(plan_discounted_total + (plan_discounted_total * Decimal("18.00")) / Decimal("100.00"))
             }
-            
+
             invoice_items = [plan_item] + invoice_addon_items + invoice_service_items
-            
+
             new_invoice = Invoice(
                 user_id=user_id,
                 order_id=new_order.id,
@@ -355,7 +355,52 @@ class OrderService:
             await db.refresh(new_order)
             await db.refresh(new_invoice)
 
-            # ✅ 1️⃣3️⃣ Auto Commission (optional)
+            # ✅ 1️⃣3️⃣ Create the server (AFTER order and invoice are created)
+            if order_data.server_details:
+                from app.services.server_service import ServerService
+                from app.schemas.server import ServerCreate
+
+                server_service = ServerService()
+
+                # Extract server details
+                server_info = order_data.server_details
+
+                # Determine monthly price based on billing cycle
+                if order_data.billing_cycle.lower() == "monthly":
+                    monthly_price = Decimal(order_data.total_amount)
+                else:
+                    # For longer cycles, we need to calculate the equivalent monthly price
+                    # This is a simplification; a more robust system might store base monthly price
+                    billing_factors = {
+                        "quarterly": 3,
+                        "semi-annually": 6,
+                        "annually": 12,
+                        "biennially": 24,
+                        "triennially": 36,
+                    }
+                    factor = billing_factors.get(order_data.billing_cycle.lower(), 1)
+                    monthly_price = Decimal(order_data.total_amount) / Decimal(factor)
+
+
+                server_create = ServerCreate(
+                    server_name=server_info.get("server_name", f"Server-{new_order.id}"),
+                    hostname=server_info.get("hostname", f"server-{new_order.id}.example.com"),
+                    server_type=server_info.get("server_type", "vps"),
+                    operating_system=server_info.get("operating_system", "ubuntu_22_04"),
+                    vcpu=server_info.get("vcpu", 1),
+                    ram_gb=server_info.get("ram_gb", 2),
+                    storage_gb=server_info.get("storage_gb", 50),
+                    bandwidth_gb=server_info.get("bandwidth_gb", 1000),
+                    plan_id=new_order.plan_id,
+                    monthly_cost=monthly_price,
+                    billing_cycle="recurring" if order_data.billing_cycle.lower() == "monthly" else "longterm",
+                    addon_ids=order_data.addon_ids,
+                    service_ids=order_data.service_ids,
+                )
+                db_server = await server_service.create_user_server(db, user_id, server_create, order_id=new_order.id)
+
+
+            # ✅ 1️⃣4️⃣ Auto Commission (optional)
             # If payment_status == "completed" → auto distribute commission
             if new_order.order_status == "completed":
                 referral_service = ReferralService()
@@ -367,7 +412,7 @@ class OrderService:
                     plan_type="recurring" if order_data.billing_cycle.lower() == "monthly" else "longterm",
                 )
 
-            # ✅ 1️⃣4️⃣ Return combined response with addons and services
+            # ✅ 1️⃣5️⃣ Return combined response with addons and services
             return {
                 "order": {
                     "id": new_order.id,
