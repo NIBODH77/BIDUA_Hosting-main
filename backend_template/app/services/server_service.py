@@ -23,25 +23,29 @@ class ServerService:
     # ✅ User-specific queries
     # --------------------------------------------------------
     async def get_user_servers(self, db: AsyncSession, user_id: int) -> List[Dict[str, Any]]:
+        from app.models.order_addon import OrderAddon
+        from app.models.order_service import OrderService as OrderServiceModel
+        
         result = await db.execute(
             select(Server)
             .options(
                 selectinload(Server.user),
-                selectinload(Server.plan)
+                selectinload(Server.plan),
+                selectinload(Server.order).selectinload(Order.order_addons),
+                selectinload(Server.order).selectinload(Order.order_services)
             )
             .where(Server.user_id == user_id)
         )
         servers = result.scalars().all()
         
-        # Enrich each server with addon and service details
         enriched_servers = []
         for server in servers:
             addon_details = []
             service_details = []
             
-            if server.specs:
-                addon_ids = server.specs.get('addon_ids', [])
-                service_ids = server.specs.get('service_ids', [])
+            if server.order_id and server.order:
+                addon_ids = [oa.addon_id for oa in server.order.order_addons if oa.is_active]
+                service_ids = [os.service_id for os in server.order.order_services if os.is_active]
                 
                 if addon_ids:
                     addon_details = await self.get_addons_from_ids(db, addon_ids)
