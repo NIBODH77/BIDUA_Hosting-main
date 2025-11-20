@@ -17,8 +17,8 @@ class ServerCreate(ServerBase):
     plan_id: int
     monthly_cost: Decimal
     billing_cycle: Optional[str] = "monthly"
-    addons: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
-    services: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
+    addon_ids: Optional[List[int]] = Field(default_factory=list)
+    service_ids: Optional[List[int]] = Field(default_factory=list)
 
     @validator('vcpu')
     def validate_vcpu(cls, v):
