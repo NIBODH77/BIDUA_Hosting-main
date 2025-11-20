@@ -133,8 +133,8 @@ class ServerService:
             "storage_gb": server_data.storage_gb,
             "bandwidth_gb": server_data.bandwidth_gb,
             "os": server_data.operating_system,
-            "addons": server_data.addons or [],
-            "services": server_data.services or []
+            "addon_ids": server_data.addon_ids or [],
+            "service_ids": server_data.service_ids or []
         }
 
         db_server = Server(
