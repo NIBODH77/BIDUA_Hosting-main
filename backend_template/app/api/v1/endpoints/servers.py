@@ -161,21 +161,21 @@ from app.schemas.users import User
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Server])
+@router.get("/")
 async def get_servers(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
     server_service: ServerService = Depends()
 ):
     """
-    Get user's servers
+    Get user's servers with addons and services
     """
     if current_user.role in ["admin", "super_admin"]:
         return await server_service.get_all_servers(db)
     else:
         return await server_service.get_user_servers(db, current_user.id)
 
-@router.get("/{server_id}", response_model=Server)
+@router.get("/{server_id}")
 async def get_server(
     server_id: int,
     db: AsyncSession = Depends(get_db),
@@ -183,16 +183,18 @@ async def get_server(
     server_service: ServerService = Depends()
 ):
     """
-    Get server by ID
+    Get server by ID with addons and services
     """
     if current_user.role in ["admin", "super_admin"]:
         server = await server_service.get_server_by_id(db, server_id)
+        if not server:
+            raise HTTPException(status_code=404, detail="Server not found")
+        return server
     else:
         server = await server_service.get_user_server(db, current_user.id, server_id)
-    
-    if not server:
-        raise HTTPException(status_code=404, detail="Server not found")
-    return server
+        if not server:
+            raise HTTPException(status_code=404, detail="Server not found")
+        return server
 
 @router.post("/", response_model=Server)
 async def create_server(
