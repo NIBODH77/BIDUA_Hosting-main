@@ -208,7 +208,7 @@ class OrderService:
                 services = service_result.scalars().all()
 
                 for service in services:
-                    unit_price = Decimal(str(service.base_price))
+                    unit_price = Decimal(str(service.price))  # ✅ Changed from base_price to price
                     quantity = Decimal("1")
                     subtotal = unit_price * quantity
 
