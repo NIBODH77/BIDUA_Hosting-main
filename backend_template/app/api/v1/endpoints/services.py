@@ -11,6 +11,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user, get_current_admin_user
 from app.models.service import Service, ServiceCategory
 from app.schemas.users import User
+from app.schemas.services import ServiceCreate, ServiceResponse
 
 router = APIRouter()
 
@@ -62,21 +63,51 @@ async def get_service_by_id(
     return service.to_dict()
 
 
-@router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
+# @router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
+# async def create_service(
+#     service_data: dict,
+#     db: AsyncSession = Depends(get_db),
+#     current_user: User = Depends(get_current_admin_user)
+# ):
+#     """
+#     Create a new service (Admin only)
+#     """
+#     new_service = Service(**service_data)
+#     db.add(new_service)
+#     await db.commit()
+#     await db.refresh(new_service)
+    
+#     return new_service.to_dict()
+
+
+
+
+@router.post("/", response_model=ServiceResponse, status_code=status.HTTP_201_CREATED)
 async def create_service(
-    service_data: dict,
+    service_data: ServiceCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
 ):
     """
     Create a new service (Admin only)
     """
-    new_service = Service(**service_data)
+    # Check if slug already exists
+    existing_service = await db.execute(
+        select(Service).where(Service.slug == service_data.slug)
+    )
+    if existing_service.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Service with this slug already exists"
+        )
+    
+    new_service = Service(**service_data.dict())
     db.add(new_service)
     await db.commit()
     await db.refresh(new_service)
     
-    return new_service.to_dict()
+    return new_service
+
 
 
 @router.put("/{service_id}", response_model=dict)
