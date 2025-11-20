@@ -17,8 +17,8 @@ app = FastAPI(
     title="BIDUA IT Connect",
     description="Complete hosting management platform API with authentication, payments, server management, and more.",
     version=settings.VERSION,
-    docs_url=None,  # Disable default docs
-    redoc_url=None,  # Disable redoc
+    # docs_url=None,  # Disable default docs
+    # redoc_url=None,  # Disable redoc
     contact={
         "name": "BIDUA IT Connect Support",
         "url": "https://bidua.com",
@@ -98,18 +98,33 @@ app = FastAPI(
     ]
 )
 
-# Middleware
+# # Middleware
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=settings.BACKEND_CORS_ORIGINS,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+#     expose_headers=["*"],
+# )
+
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=settings.ALLOWED_HOSTS
+
+# app.add_middleware(
+#     TrustedHostMiddleware,
+#     allowed_hosts=settings.ALLOWED_HOSTS
+# )
+
+
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"]
 )
 
 # Add no-cache headers middleware
