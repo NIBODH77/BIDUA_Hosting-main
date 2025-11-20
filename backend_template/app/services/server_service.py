@@ -540,17 +540,30 @@ class ServerService:
             return []
         
         print(f"🔍 [get_addons_from_ids] Querying for addon IDs: {addon_ids}")
+        print(f"🔍 [get_addons_from_ids] Type of addon_ids: {type(addon_ids)}, Elements: {[type(x) for x in addon_ids]}")
         
         try:
+            # First, check if ANY addons exist in the database
+            count_result = await db.execute(select(func.count(Addon.id)))
+            total_addons = count_result.scalar()
+            print(f"📊 Total addons in database: {total_addons}")
+            
+            # Get all addon IDs to see what's available
+            all_ids_result = await db.execute(select(Addon.id))
+            all_ids = [row[0] for row in all_ids_result.fetchall()]
+            print(f"📊 Available addon IDs: {all_ids}")
+            
+            # Now execute the actual query
             result = await db.execute(
                 select(Addon).where(Addon.id.in_(addon_ids))
             )
             addons = result.scalars().all()
             
-            print(f"📦 [get_addons_from_ids] Database returned {len(addons)} addons")
+            print(f"📦 [get_addons_from_ids] Database returned {len(addons)} addons for IDs {addon_ids}")
             
             if len(addons) != len(addon_ids):
-                print(f"⚠️ Warning: Requested {len(addon_ids)} addons, but only found {len(addons)}")
+                missing_ids = set(addon_ids) - {addon.id for addon in addons}
+                print(f"⚠️ Warning: Missing addons with IDs: {missing_ids}")
             
             # Convert to dict format
             addon_list = []
@@ -563,6 +576,8 @@ class ServerService:
             return addon_list
         except Exception as e:
             print(f"❌ Error in get_addons_from_ids: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     async def get_services_from_ids(self, db: AsyncSession, service_ids: List[int]) -> List[Dict[str, Any]]:
@@ -574,17 +589,30 @@ class ServerService:
             return []
         
         print(f"🔍 [get_services_from_ids] Querying for service IDs: {service_ids}")
+        print(f"🔍 [get_services_from_ids] Type of service_ids: {type(service_ids)}, Elements: {[type(x) for x in service_ids]}")
         
         try:
+            # First, check if ANY services exist in the database
+            count_result = await db.execute(select(func.count(Service.id)))
+            total_services = count_result.scalar()
+            print(f"📊 Total services in database: {total_services}")
+            
+            # Get all service IDs to see what's available
+            all_ids_result = await db.execute(select(Service.id))
+            all_ids = [row[0] for row in all_ids_result.fetchall()]
+            print(f"📊 Available service IDs: {all_ids}")
+            
+            # Now execute the actual query
             result = await db.execute(
                 select(Service).where(Service.id.in_(service_ids))
             )
             services = result.scalars().all()
             
-            print(f"🔧 [get_services_from_ids] Database returned {len(services)} services")
+            print(f"🔧 [get_services_from_ids] Database returned {len(services)} services for IDs {service_ids}")
             
             if len(services) != len(service_ids):
-                print(f"⚠️ Warning: Requested {len(service_ids)} services, but only found {len(services)}")
+                missing_ids = set(service_ids) - {service.id for service in services}
+                print(f"⚠️ Warning: Missing services with IDs: {missing_ids}")
             
             # Convert to dict format
             service_list = []
@@ -597,4 +625,6 @@ class ServerService:
             return service_list
         except Exception as e:
             print(f"❌ Error in get_services_from_ids: {e}")
+            import traceback
+            traceback.print_exc()
             return []
