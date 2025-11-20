@@ -43,14 +43,62 @@ class ServerService:
         )
         return result.scalars().all()
 
-    async def get_user_server(self, db: AsyncSession, user_id: int, server_id: int) -> Optional[Server]:
+    async def get_user_server(self, db: AsyncSession, user_id: int, server_id: int) -> Optional[Dict[str, Any]]:
         result = await db.execute(
             select(Server).where(
                 Server.id == server_id,
                 Server.user_id == user_id,
             )
         )
-        return result.scalar_one_or_none()
+        server = result.scalar_one_or_none()
+        
+        if not server:
+            return None
+        
+        # Fetch addon and service details if they exist in specs
+        addon_details = []
+        service_details = []
+        
+        if server.specs:
+            addon_ids = server.specs.get('addon_ids', [])
+            service_ids = server.specs.get('service_ids', [])
+            
+            if addon_ids:
+                addon_details = await self.get_addons_from_ids(db, addon_ids)
+            
+            if service_ids:
+                service_details = await self.get_services_from_ids(db, service_ids)
+        
+        # Convert server to dict and add details
+        server_dict = {
+            "id": server.id,
+            "user_id": server.user_id,
+            "order_id": server.order_id,
+            "server_name": server.server_name,
+            "hostname": server.hostname,
+            "ip_address": server.ip_address,
+            "server_status": server.server_status,
+            "server_type": server.server_type,
+            "vcpu": server.vcpu,
+            "ram_gb": server.ram_gb,
+            "storage_gb": server.storage_gb,
+            "bandwidth_gb": server.bandwidth_gb,
+            "operating_system": server.operating_system,
+            "plan_id": server.plan_id,
+            "plan_name": server.plan_name,
+            "monthly_cost": float(server.monthly_cost),
+            "billing_cycle": server.billing_cycle,
+            "created_date": server.created_date,
+            "expiry_date": server.expiry_date,
+            "specs": server.specs,
+            "notes": server.notes,
+            "created_at": server.created_at,
+            "updated_at": server.updated_at,
+            "addons": addon_details,
+            "services": service_details
+        }
+        
+        return server_dict
 
     # --------------------------------------------------------
     # ✅ Admin / General queries
@@ -377,3 +425,29 @@ class ServerService:
             "total_monthly_cost": Decimal(total_monthly_cost.scalar() or 0),
             "bandwidth_used": await self.get_user_bandwidth_used(db, user_id)
         }
+
+    async def get_addons_from_ids(self, db: AsyncSession, addon_ids: List[int]) -> List[Dict[str, Any]]:
+        """Fetch addon details from addon IDs"""
+        from app.models.addon import Addon
+        
+        if not addon_ids:
+            return []
+        
+        result = await db.execute(
+            select(Addon).where(Addon.id.in_(addon_ids))
+        )
+        addons = result.scalars().all()
+        return [addon.to_dict() for addon in addons]
+
+    async def get_services_from_ids(self, db: AsyncSession, service_ids: List[int]) -> List[Dict[str, Any]]:
+        """Fetch service details from service IDs"""
+        from app.models.service import Service
+        
+        if not service_ids:
+            return []
+        
+        result = await db.execute(
+            select(Service).where(Service.id.in_(service_ids))
+        )
+        services = result.scalars().all()
+        return [service.to_dict() for service in services]
