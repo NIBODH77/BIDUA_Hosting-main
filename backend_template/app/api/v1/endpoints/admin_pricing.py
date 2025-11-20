@@ -7,9 +7,8 @@ from app.core.database import get_db
 from app.core.security import get_current_admin_user
 from app.schemas.users import User
 from app.schemas.pricing import (
-    HostingPlanConfigResponse,
-    HostingPlanConfigCreate,
-    HostingPlanConfigUpdate
+    HostingPlanResponse,
+    HostingPlanBase
 )
 from app.models.hosting_plan_config import HostingPlanConfig
 from sqlalchemy import select
@@ -17,7 +16,7 @@ from sqlalchemy import select
 router = APIRouter()
 
 
-@router.get("/plans", response_model=List[HostingPlanConfigResponse])
+@router.get("/plans", response_model=List[HostingPlanResponse])
 async def get_all_pricing_plans(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
@@ -28,7 +27,7 @@ async def get_all_pricing_plans(
     return plans
 
 
-@router.get("/plans/{plan_id}", response_model=HostingPlanConfigResponse)
+@router.get("/plans/{plan_id}", response_model=HostingPlanResponse)
 async def get_pricing_plan(
     plan_id: int,
     db: AsyncSession = Depends(get_db),
@@ -49,9 +48,9 @@ async def get_pricing_plan(
     return plan
 
 
-@router.post("/plans", response_model=HostingPlanConfigResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/plans", response_model=HostingPlanResponse, status_code=status.HTTP_201_CREATED)
 async def create_pricing_plan(
-    plan_data: HostingPlanConfigCreate,
+    plan_data: HostingPlanBase,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
 ):
@@ -63,10 +62,10 @@ async def create_pricing_plan(
     return new_plan
 
 
-@router.put("/plans/{plan_id}", response_model=HostingPlanConfigResponse)
+@router.put("/plans/{plan_id}", response_model=HostingPlanResponse)
 async def update_pricing_plan(
     plan_id: int,
-    plan_data: HostingPlanConfigUpdate,
+    plan_data: HostingPlanBase,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
 ):
