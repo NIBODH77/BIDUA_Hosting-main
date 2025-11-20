@@ -55,8 +55,8 @@ class ServerService:
                 if service_ids:
                     service_details = await self.get_services_from_ids(db, service_ids)
             
-            # Priority 2: If no order OR order has no addons/services, get from specs
-            if not addon_details and not service_details and server.specs:
+            # Priority 2: If no order_id (direct server creation), get from specs
+            elif server.specs:
                 addon_ids = server.specs.get('addon_ids', [])
                 service_ids = server.specs.get('service_ids', [])
                 
