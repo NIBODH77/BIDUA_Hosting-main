@@ -10,7 +10,7 @@ from app.schemas.pricing import (
     HostingPlanResponse,
     HostingPlanBase
 )
-from app.models.hosting_plan_config import HostingPlanConfig
+from app.models.plan import HostingPlan
 from sqlalchemy import select
 
 router = APIRouter()
@@ -22,7 +22,7 @@ async def get_all_pricing_plans(
     current_user: User = Depends(get_current_admin_user)
 ):
     """Get all hosting plan configurations (Admin only)"""
-    result = await db.execute(select(HostingPlanConfig))
+    result = await db.execute(select(HostingPlan))
     plans = result.scalars().all()
     return plans
 
@@ -35,7 +35,7 @@ async def get_pricing_plan(
 ):
     """Get a specific pricing plan configuration (Admin only)"""
     result = await db.execute(
-        select(HostingPlanConfig).where(HostingPlanConfig.id == plan_id)
+        select(HostingPlan).where(HostingPlan.id == plan_id)
     )
     plan = result.scalar_one_or_none()
     
@@ -55,7 +55,7 @@ async def create_pricing_plan(
     current_user: User = Depends(get_current_admin_user)
 ):
     """Create a new pricing plan configuration (Admin only)"""
-    new_plan = HostingPlanConfig(**plan_data.dict())
+    new_plan = HostingPlan(**plan_data.dict())
     db.add(new_plan)
     await db.commit()
     await db.refresh(new_plan)
@@ -71,7 +71,7 @@ async def update_pricing_plan(
 ):
     """Update a pricing plan configuration (Admin only)"""
     result = await db.execute(
-        select(HostingPlanConfig).where(HostingPlanConfig.id == plan_id)
+        select(HostingPlan).where(HostingPlan.id == plan_id)
     )
     plan = result.scalar_one_or_none()
     
@@ -98,7 +98,7 @@ async def delete_pricing_plan(
 ):
     """Delete a pricing plan configuration (Admin only)"""
     result = await db.execute(
-        select(HostingPlanConfig).where(HostingPlanConfig.id == plan_id)
+        select(HostingPlan).where(HostingPlan.id == plan_id)
     )
     plan = result.scalar_one_or_none()
     
