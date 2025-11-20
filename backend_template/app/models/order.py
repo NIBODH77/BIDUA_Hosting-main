@@ -19,7 +19,7 @@ class Order(Base):
     order_status = Column(String(50), default='pending', nullable=False)          # pending, active, cancelled, completed, expired
     payment_status = Column(String(50), default='pending', nullable=False)        # pending, paid, failed, refunded, partially_refunded
     billing_cycle = Column(String(50), nullable=False)                            # monthly, quarterly, annual, biennial, triennial
-    
+
     # Payment Classification
     payment_type = Column(String(20), default='subscription', nullable=False)     # subscription or server
     activation_type = Column(String(20), nullable=True)                           # direct or referral (from user)
@@ -94,6 +94,9 @@ class Order(Base):
         lazy="select"
     )
 
+    # 🔹 NEW: Access servers created from this order
+    servers = relationship("Server", back_populates="order", foreign_keys="Server.order_id")
+
     # Link referral earnings
     referral_earnings = relationship(
         "ReferralEarning",
@@ -101,7 +104,7 @@ class Order(Base):
         cascade="all, delete-orphan",
         lazy="select"  # 🔹 Better performance
     )
-    
+
     # Link to payment transaction (one order can have one payment)
     payment_transaction = relationship(
         "PaymentTransaction",

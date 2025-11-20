@@ -612,7 +612,7 @@ class ServerService:
     # ✅ Create server
     # --------------------------------------------------------
     async def create_user_server(
-        self, db: AsyncSession, user_id: int, server_data: ServerCreate
+        self, db: AsyncSession, user_id: int, server_data: ServerCreate, order_id: Optional[int] = None
     ) -> Server:
         # Fetch plan details
         result = await db.execute(
@@ -648,6 +648,7 @@ class ServerService:
 
         db_server = Server(
             user_id=user_id,
+            order_id=order_id,  # 🔹 NEW: Link to order
             server_name=server_data.server_name,
             hostname=server_data.hostname,
             server_type=server_data.server_type,

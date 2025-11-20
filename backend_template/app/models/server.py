@@ -59,6 +59,9 @@ class Server(Base):
     # 🔹 Now properly linked to HostingPlan
     plan_id = Column(Integer, ForeignKey('hosting_plans.id'), nullable=False)
     
+    # 🔹 NEW: Link to order for addon/service access
+    order_id = Column(Integer, ForeignKey('orders.id'), nullable=True)
+    
     server_name = Column(String(255), nullable=False)
     hostname = Column(String(255), nullable=False)
     ip_address = Column(String(45), nullable=True)
@@ -99,6 +102,14 @@ class Server(Base):
         "HostingPlan", 
         back_populates="servers",
         foreign_keys=[plan_id]
+    )
+    
+    # 🔹 NEW: Access order details (which contains addons/services)
+    order = relationship(
+        "Order",
+        foreign_keys="Server.order_id",
+        back_populates="servers",
+        uselist=False
     )
 
     # 🔹 Indexes for better performance
