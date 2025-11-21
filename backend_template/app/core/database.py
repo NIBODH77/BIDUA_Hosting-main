@@ -6,6 +6,18 @@ import os
 # Get database URL from environment or settings
 DATABASE_URL = os.getenv("DATABASE_URL") or settings.DATABASE_URL
 
+# Convert PostgreSQL URL to async version (postgresql+asyncpg://)
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+
+# asyncpg doesn't support sslmode parameter - remove it
+if "?sslmode=" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.split("?sslmode=")[0]
+elif "&sslmode=" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.split("&sslmode=")[0]
+
 # Create async engine
 engine = create_async_engine(
     DATABASE_URL, 
