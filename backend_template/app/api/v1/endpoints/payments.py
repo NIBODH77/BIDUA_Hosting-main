@@ -226,6 +226,17 @@ async def verify_payment(
     import time
     start_time = time.time()
     print(f"🔄 Payment verification started at {start_time}")
+    
+    # 🔍 PRINT RECEIVED VALUES FROM RAZORPAY (for debugging)
+    print("=" * 80)
+    print("📦 RAZORPAY PAYMENT DATA RECEIVED:")
+    print("=" * 80)
+    print(f"✅ razorpay_order_id    : {payment_data.razorpay_order_id}")
+    print(f"✅ razorpay_payment_id  : {payment_data.razorpay_payment_id}")
+    print(f"✅ razorpay_signature   : {payment_data.razorpay_signature}")
+    print(f"👤 Current User ID      : {current_user.id}")
+    print(f"📧 Current User Email   : {current_user.email}")
+    print("=" * 80)
 
     payment_service = PaymentService()
     commission_service = CommissionService()
