@@ -377,49 +377,9 @@ class OrderService:
             await db.refresh(new_order)
             await db.refresh(new_invoice)
 
-            # ✅ 1️⃣3️⃣ Create the server (AFTER order and invoice are created)
-            if order_data.server_details:
-                from app.services.server_service import ServerService
-                from app.schemas.server import ServerCreate
-
-                server_service = ServerService()
-
-                # Extract server details
-                server_info = order_data.server_details
-
-                # Determine monthly price based on billing cycle
-                if order_data.billing_cycle.lower() == "monthly":
-                    monthly_price = Decimal(order_data.total_amount)
-                else:
-                    # For longer cycles, we need to calculate the equivalent monthly price
-                    # This is a simplification; a more robust system might store base monthly price
-                    billing_factors = {
-                        "quarterly": 3,
-                        "semi-annually": 6,
-                        "annually": 12,
-                        "biennially": 24,
-                        "triennially": 36,
-                    }
-                    factor = billing_factors.get(order_data.billing_cycle.lower(), 1)
-                    monthly_price = Decimal(order_data.total_amount) / Decimal(factor)
-
-
-                server_create = ServerCreate(
-                    server_name=server_info.get("server_name", f"Server-{new_order.id}"),
-                    hostname=server_info.get("hostname", f"server-{new_order.id}.example.com"),
-                    server_type=server_info.get("server_type", "vps"),
-                    operating_system=server_info.get("operating_system", "ubuntu_22_04"),
-                    vcpu=server_info.get("vcpu", 1),
-                    ram_gb=server_info.get("ram_gb", 2),
-                    storage_gb=server_info.get("storage_gb", 50),
-                    bandwidth_gb=server_info.get("bandwidth_gb", 1000),
-                    plan_id=new_order.plan_id,
-                    monthly_cost=monthly_price,
-                    billing_cycle="recurring" if order_data.billing_cycle.lower() == "monthly" else "longterm",
-                    addon_ids=order_data.addon_ids,
-                    service_ids=order_data.service_ids,
-                )
-                db_server = await server_service.create_user_server(db, user_id, server_create, order_id=new_order.id)
+            # ✅ 1️⃣3️⃣ Server creation will happen ONLY after payment is verified
+            # This prevents duplicate server creation
+            # Payment webhook will handle server provisioning
 
 
             # ✅ 1️⃣4️⃣ Auto Commission (optional)
